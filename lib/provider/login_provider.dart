@@ -93,9 +93,75 @@ class LoginProvider extends ChangeNotifier {
     print(credential.toString() + "sjjss");
     await auth.signInWithCredential(credential).then((value) {
       final user = value.user;
+      if (value.user != null) {
+        userAuthorized(user?.phoneNumber, context);
+      } else {
+        if (kDebugMode) {}
+      }
 
     });
   }
+  Future<void> userAuthorized(String? phoneNumber, BuildContext context) async {
+    String loginUsername = '';
+    String userId = '';
+    String loginPhoto = "";
+    String shopname = "";
+    String shoplogo = "";
+    String loginPhone = "";
+    String loginUserId = "";
+    String address = "";
+    MainProvider mainProvider = Provider.of<MainProvider>(context, listen: false);
+    try {
+      var phone = phoneNumber!;
+      print(phoneNumber.toString() + "duudud");
+      db.collection("OWNER_DETAILS").where("PHONE_NUMBER", isEqualTo: phone).get().then((value) {
+        if (value.docs.isNotEmpty) {
+          print("fiifuif");
+          for (var element in value.docs) {
+            Map<dynamic, dynamic> map = element.data();
+            loginUsername = map['OWNER_NAME'].toString();
+            loginPhone = map["PHONE_NUMBER"].toString();
+            loginPhoto= map["PHOTO"].toString();
+            shopname= map["SHOP_NAME"].toString();
+            shoplogo= map["LOGO"].toString();
+            loginUserId = element.id;
+            // userId = map["USER_ID"].toString();
+            notifyListeners();
+
+            print("cb bcb");
+            callNextReplacement(context,  HomeScreen(name: loginUsername, phone: loginPhone,  userId: loginUserId ,
+              photo: loginPhoto, shopname: shopname, shoplogo: shoplogo,));
+          }
+        } else {
+          const snackBar = SnackBar(
+              backgroundColor: Colors.transparent,
+              duration: Duration(milliseconds: 3000),
+              content: Text(
+                "Sorry , You don't have any access",
+                textAlign: TextAlign.center,
+                softWrap: true,
+                style: TextStyle(
+                    fontSize: 16, fontFamily: 'Amikosemi', color: clwhite),
+              ));
+
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
+      });
+    } catch (e) {
+      const snackBar = SnackBar(
+          backgroundColor: Colors.transparent,
+          duration: Duration(milliseconds: 3000),
+          content: Text(
+            "Sorry , Some Error Occurred",
+            textAlign: TextAlign.center,
+            softWrap: true,
+            style: TextStyle(
+                fontSize: 15, fontFamily: 'Amikosemi', color: clwhite),
+          ));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+  }
+
 
 
 
@@ -105,4 +171,5 @@ class LoginProvider extends ChangeNotifier {
     otpController.clear();
     notifyListeners();
   }
+
 }

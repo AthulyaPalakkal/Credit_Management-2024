@@ -3,6 +3,7 @@ import 'package:credit_management/login_page.dart';
 import 'package:credit_management/provider/login_provider.dart';
 import 'package:credit_management/provider/main_provider.dart';
 import 'package:credit_management/sample.dart';
+import 'package:credit_management/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,13 +27,13 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'credit Management',
+        title: 'Clear Credit',
         theme: ThemeData(
 
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home: LoginPage(),
+        home: Splash(),
       ),
     );
   }

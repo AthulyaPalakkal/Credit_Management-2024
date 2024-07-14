@@ -1,6 +1,7 @@
 import 'package:credit_management/add_user.dart';
 import 'package:credit_management/crediters_list.dart';
 import 'package:credit_management/provider/main_provider.dart';
+import 'package:credit_management/transaction_history.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,6 +27,7 @@ class UserProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    MainProvider provider = Provider.of<MainProvider>(context,listen: false);
 
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
@@ -152,22 +154,28 @@ class UserProfile extends StatelessWidget {
                             color: Colors.transparent,
                             border: Border.all(color: cl3005e75),
                             borderRadius: BorderRadius.circular(8),
-
                           ),
-                          child:Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 6),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6.0),
                             child: Row(
                               children: [
-
-                                Text(value.customerlist[index].ccAmount,style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                    color: clblack
-                                ),),
+                                Consumer<MainProvider>(
+                                  builder: (context, value, child) {
+                                    return Text(
+                                      value.customerlist[index].ccAmount,
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 14,
+                                        color: clblack,
+                                      ),
+                                    );
+                                  },
+                                ),
                               ],
                             ),
                           ),
                         ),
+
 
                       ],
                     ),
@@ -180,20 +188,26 @@ class UserProfile extends StatelessWidget {
                   SizedBox(height:10,),
                  Padding(
                    padding: const EdgeInsets.all(8.0),
-                   child: Container(
-                     width: width,
-                     height: height/16,
-                     decoration: BoxDecoration(
-                       color: cl3005e75,
-                       borderRadius: BorderRadius.circular(10)
-                     ),
-                     child: Center(
-                       child: Text("Transaction History",style: GoogleFonts.poppins(
-                         fontSize: 18,
-                         fontWeight: FontWeight.w500,
-                         color: clwhite,
-                         letterSpacing: 1.5
-                       ),),
+                   child: InkWell(
+                     onTap: (){
+                       provider.fetchHistory(userid);
+                       callNext(context, TransactionHistory());
+                     },
+                     child: Container(
+                       width: width,
+                       height: height/16,
+                       decoration: BoxDecoration(
+                         color: cl3005e75,
+                         borderRadius: BorderRadius.circular(10)
+                       ),
+                       child: Center(
+                         child: Text("Transaction History",style: GoogleFonts.poppins(
+                           fontSize: 18,
+                           fontWeight: FontWeight.w500,
+                           color: clwhite,
+                           letterSpacing: 1.5
+                         ),),
+                       ),
                      ),
                    ),
                  ),
@@ -205,7 +219,8 @@ class UserProfile extends StatelessWidget {
                    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                      children: [
                        InkWell(onTap: (){
-                         _showAmountDialog(context);
+                         provider.clearcredit();
+                         _showAmountDialog(context, userid,ccAmount,);
                          },
 
                          child: Container(
@@ -225,20 +240,26 @@ class UserProfile extends StatelessWidget {
                            ),
                          ),
                        ),
-                       Container(
-                         width: width/2.9,
-                         height: height/18,
-                         decoration: BoxDecoration(
-                          color: cl3005e75,
-                           borderRadius: BorderRadius.circular(10),
-                         ),
-                         child: Center(
-                           child: Text("Debit",style: GoogleFonts.poppins(
-                               fontWeight: FontWeight.w500,
-                               fontSize: 18,
-                               color: clwhite,
-                             letterSpacing: 1.2
-                           ),),
+                       InkWell(
+                         onTap: (){
+                           provider.cleardebit();
+                           _showdebitAmountDialog(context, userid,ccAmount,);
+                         },
+                         child: Container(
+                           width: width/2.9,
+                           height: height/18,
+                           decoration: BoxDecoration(
+                            color: cl3005e75,
+                             borderRadius: BorderRadius.circular(10),
+                           ),
+                           child: Center(
+                             child: Text("Debit",style: GoogleFonts.poppins(
+                                 fontWeight: FontWeight.w500,
+                                 fontSize: 18,
+                                 color: clwhite,
+                               letterSpacing: 1.2
+                             ),),
+                           ),
                          ),
                        )
 
@@ -257,10 +278,7 @@ class UserProfile extends StatelessWidget {
     );
   }
 }
-void _showAmountDialog(BuildContext context) {
-  final amountController = TextEditingController();
-  final creditProvider = Provider.of<MainProvider>(context, listen: false);
-
+void _showAmountDialog(BuildContext context,String userId, String ccAmount  ) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -269,37 +287,18 @@ void _showAmountDialog(BuildContext context) {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: amountController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                hintText: "Enter amount",
-              ),
-            ),
-            SizedBox(height: 20),
             Consumer<MainProvider>(
-              builder: (context, provider, child) {
-                return Text(
-                  provider.selectedDate == null
-                      ? 'No Date Selected'
-                      : 'Selected Date: ${provider.selectedDate!.toLocal()}'.split(' ')[0],
+              builder: (context, value, child) {
+                return TextField(
+                  controller: value.creditControler,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: "Enter amount",
+                  ),
                 );
-              },
+              }
             ),
-            ElevatedButton(
-              onPressed: () async {
-                final DateTime? pickedDate = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2101),
-                );
-                if (pickedDate != null) {
-                  creditProvider.setDate(pickedDate);
-                }
-              },
-              child: Text('Select Date'),
-            ),
+
             SizedBox(height: 20),
           ],
         ),
@@ -310,18 +309,73 @@ void _showAmountDialog(BuildContext context) {
             },
             child: Text("Cancel"),
           ),
-          ElevatedButton(
-            onPressed: () {
-
-              Navigator.of(context).pop(); // Close the dialog
-            },
-            child: Text("Done"),
+          Consumer<MainProvider>(
+            builder: (context,value, child) {
+              return ElevatedButton(
+                onPressed: () {
+                  String amountToadd = ccAmount;
+                  value.addCreadit(userId, amountToadd );
+                  Navigator.of(context).pop();
+                },
+                child: Text("Done"),
+              );
+            }
           ),
         ],
       );
     },
   );
 }
+void _showdebitAmountDialog(BuildContext context,String userId, String ccAmount  ) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("Enter Details"),
+        content: Consumer<MainProvider>(
+            builder: (context,value, child) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller:value.debitControler,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: "Enter amount",
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
+                ],
+              );
+            }
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: Text("Cancel"),
+          ),
+          Consumer<MainProvider>(
+              builder: (context,value, child) {
+                return ElevatedButton(
+                  onPressed: () {
+                    String amountTosubtract = ccAmount;
+                    value.adddebit(userId, amountTosubtract );
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("Done"),
+                );
+              }
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
 
 void _showDeleteConfirmationDialog(BuildContext context, index) {
   showDialog(

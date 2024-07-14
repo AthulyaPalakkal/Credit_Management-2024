@@ -22,6 +22,8 @@ class LoginPage extends StatelessWidget {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
     final FirebaseFirestore db = FirebaseFirestore.instance;
+    MainProvider provider = Provider.of<MainProvider>(context,listen: false);
+
 
     LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: false);
     return Scaffold(
@@ -46,8 +48,19 @@ class LoginPage extends StatelessWidget {
                 child: Text(
                   "Login ",
                   style: GoogleFonts.poppins(
-                    letterSpacing: 1.5,
-                      fontSize: 26, fontWeight: FontWeight.bold, color: clwhite),
+                    letterSpacing: 1.7,
+                      fontSize: 28, fontWeight: FontWeight.bold, color: clwhite),
+                ),
+
+              ),
+              SizedBox(height: 20,),
+              Text(
+                "Welcome to our app!",
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                 letterSpacing: 1.5,
+                 fontWeight: FontWeight.normal,
+                  color: clwhite.withOpacity(0.4),
                 ),
               ),
               SizedBox(
@@ -94,7 +107,7 @@ class LoginPage extends StatelessWidget {
                       if (value.phoneController.text.length == 10 &&
                           value.phoneController.text != '') {
                         db
-                            .collection("USERS")
+                            .collection("OWNER_DETAILS")
                             .where("PHONE_NUMBER",
                             isEqualTo:
                             "+91${value.phoneController.text}")
@@ -167,6 +180,7 @@ class LoginPage extends StatelessWidget {
                   return TextButton(
                       onPressed: () {
                         value.clearcustomerdata();
+                        provider.clearownerdata();
                         callNext(context, Registration());
                       },
                       child:  Text(
