@@ -1,6 +1,6 @@
 # credit_management
 
-A new Flutter project.
+Manage customer  outstanding payments efficiently with this app designed for shop owners. Keep track of unpaid amounts, add new customers, and update payment statuses seamlessly.
 
 ## Getting Started
 
